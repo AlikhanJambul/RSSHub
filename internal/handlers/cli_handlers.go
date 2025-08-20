@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"RSSHub/internal/apperrors"
 	"RSSHub/internal/models"
+	"RSSHub/internal/utils"
+	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 )
 
 func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
@@ -11,10 +15,29 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 
 	var data models.Command
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		utils.JsonResponse(w, 401, map[string]interface{}{
+			"error": err.Error(),
+		})
 		return
 	}
 
-	// TODO: service logic
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 
+	defer cancel()
+	
+	err := h.cliService.AddService(ctx, data)
+	if err != nil {
+		errCode := apperrors.CheckError(err)
+
+		utils.JsonResponse(w, errCode, map[string]string{
+			"error": err.Error(),
+		})
+
+		return
+	}
+
+	utils.JsonResponse(w, 200, map[string]string{
+		"status":  "ok",
+		"message": "Added successfully!",
+	})
 }

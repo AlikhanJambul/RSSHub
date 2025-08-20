@@ -2,6 +2,7 @@ package storage
 
 import (
 	"RSSHub/internal/models"
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -12,7 +13,12 @@ type Repo struct {
 	db *sql.DB
 }
 
-type CLIRepo interface{}
+type CLIRepo interface {
+	InsertFeed(ctx context.Context, body models.Command) error
+	CheckName(ctx context.Context, name string) bool
+	GetFeeds(ctx context.Context, count int) ([]models.RSSWorkers, error)
+	InsertArticles(ctx context.Context, feed models.RSSItem, name string) error
+}
 
 func Connect(cfgDB models.DB) (*sql.DB, error) {
 	connStr := fmt.Sprintf(
