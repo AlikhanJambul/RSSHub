@@ -30,6 +30,8 @@ func Connect(cfgDB models.DB) (*sql.DB, error) {
 		cfgDB.PostgresName,
 	)
 
+	fmt.Println(connStr)
+
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err

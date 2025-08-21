@@ -7,8 +7,12 @@ import (
 	"RSSHub/internal/logger"
 	"RSSHub/internal/service"
 	"RSSHub/internal/storage"
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -31,16 +35,35 @@ func StartServer() {
 	cliAggregator := aggregator.InitAggregator(cfg.WorkerCount, interval, cliRepo, *cliLogger)
 	cliHandler := handlers.NewHandler(cliRepo, cliService, cliAggregator, *cliLogger)
 
-	go func() {
-		svr := http.Server{
-			Addr:    ":8080",
-			Handler: cliHandler.Router(),
-		}
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
+	svr := http.Server{
+		Addr:    ":8080",
+		Handler: cliHandler.Router(),
+	}
+
+	go func() {
 		if err := svr.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
 	}()
-	cliAggregator.Start()
 
+	cliLogger.Info("Server started")
+
+	go cliAggregator.Start()
+
+	<-stop
+	cliLogger.Info("Shutting down gracefully...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := svr.Shutdown(ctx); err != nil {
+		log.Fatalf("Server Shutdown Failed:%+v", err)
+	}
+
+	cliAggregator.Stop()
+
+	cliLogger.Info("Server exited properly")
 }

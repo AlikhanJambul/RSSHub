@@ -11,8 +11,8 @@ func Load() models.Config {
 		PostgresHost: getEnv("POSTGRES_HOST", "localhost"),
 		PostgresPort: getEnv("POSTGRES_PORT", "5432"),
 		PostgresUser: getEnv("POSTGRES_USER", "postgres"),
-		PostgresPass: getEnv("POSTGRES_PASSWORD", "postgres"),
-		PostgresName: getEnv("POSTGRES_NAME", "rsshub"),
+		PostgresPass: getEnv("POSTGRES_PASSWORD", "changem"),
+		PostgresName: getEnv("POSTGRES_DB", "rsshub"),
 	}
 
 	return models.Config{

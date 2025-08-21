@@ -22,7 +22,7 @@ func NewHandler(cliRepo storage.CLIRepo, cliService service.CLIService, cliAggre
 func (h *Handler) Router() *http.ServeMux {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/add", func(w http.ResponseWriter, r *http.Request) {})
+	mux.HandleFunc("POST /add", h.Add)
 
 	return mux
 }

@@ -65,7 +65,10 @@ func (m *Manager) Start() {
 						return
 					}
 
-					for _, item := range feed.Channel.Item {
+					//m.cliLogger.Info("count of workers = " len(feed))
+
+					for idx, item := range feed.Channel.Item {
+						m.cliLogger.Info("idx:", idx, "item:", item)
 						err := m.cliRepo.InsertArticles(context.Background(), item, name)
 						if err != nil {
 							m.cliLogger.Error(err.Error())

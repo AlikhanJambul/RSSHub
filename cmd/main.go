@@ -1,11 +1,10 @@
 package main
 
 import (
+	"RSSHub/internal/cli"
 	"RSSHub/internal/models"
 	"flag"
 	"fmt"
-	"log"
-	"net/http"
 	"os"
 )
 
@@ -86,11 +85,9 @@ func main() {
 
 	switch cmd.Name {
 	case "fetch":
-		if err := http.ListenAndServe("8080", nil); err != nil {
-			log.Fatal(err)
-		}
+		cli.StartServer()
 	case "add":
-		fmt.Printf("Adding feed: %s (%s)\n", cmd.NameArg, cmd.URL)
+		cli.AddFeed(cmd)
 	case "set-interval":
 		fmt.Printf("Changing interval to: %s\n", cmd.Interval)
 	case "set-workers":
