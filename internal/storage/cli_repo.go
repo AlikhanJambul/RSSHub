@@ -11,7 +11,7 @@ import (
 func (r *Repo) InsertFeed(ctx context.Context, body models.Command) error {
 	query := `INSERT INTO feeds (name, url) VALUES ($1, $2)`
 
-	_, err := r.db.ExecContext(ctx, query, body.Name, body.URL)
+	_, err := r.db.ExecContext(ctx, query, body.NameArg, body.URL)
 	if err != nil {
 		return err
 	}
@@ -22,10 +22,12 @@ func (r *Repo) InsertFeed(ctx context.Context, body models.Command) error {
 func (r *Repo) CheckName(ctx context.Context, name string) bool {
 	query := `SELECT name FROM feeds WHERE name = $1;`
 
-	err := r.db.QueryRowContext(ctx, query, name)
-	if errors.Is(err.Err(), sql.ErrNoRows) {
+	var n string
+	err := r.db.QueryRowContext(ctx, query, name).Scan(&n)
+	if errors.Is(err, sql.ErrNoRows) {
 		return false
-	} else if err != nil {
+	}
+	if err != nil {
 		return true
 	}
 
@@ -52,15 +54,13 @@ func (r *Repo) GetFeeds(ctx context.Context, count int) ([]models.RSSWorkers, er
 	}
 
 	return result, nil
-
 }
 
 func (r *Repo) InsertArticles(ctx context.Context, feed models.RSSItem, name string) error {
 	updateQuery := "UPDATE feeds SET updated_at = $1 WHERE name = $2 RETURNING id;"
 
 	insertQuery := `INSERT INTO articles (title, link, description, published_at, feed_id)
-			  VALUES ($1, $2, $3, $4, $5)
-			  ON CONFLICT (link) DO NOTHING;`
+			  VALUES ($1, $2, $3, $4, $5);`
 
 	pubData, err := time.Parse(time.RFC1123Z, feed.PubDate)
 	if err != nil {
@@ -73,7 +73,7 @@ func (r *Repo) InsertArticles(ctx context.Context, feed models.RSSItem, name str
 	}
 	defer tx.Rollback()
 
-	var id int64
+	var id string
 
 	err = tx.QueryRowContext(ctx, updateQuery, time.Now(), name).Scan(&id)
 	if err != nil {

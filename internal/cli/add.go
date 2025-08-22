@@ -24,6 +24,7 @@ func AddFeed(command models.Command) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		fmt.Println(resp.StatusCode)
 		fmt.Fprintln(os.Stderr, "Something went wrong")
 		os.Exit(1)
 	}

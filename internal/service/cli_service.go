@@ -53,7 +53,7 @@ func checkUrl(bodyUrl string) bool {
 }
 
 func (s *Service) AddService(ctx context.Context, body models.Command) error {
-	if body.Name == "" {
+	if body.NameArg == "" {
 		return apperrors.ErrInvalidName
 	}
 
@@ -61,7 +61,7 @@ func (s *Service) AddService(ctx context.Context, body models.Command) error {
 		return apperrors.ErrInvalidURL
 	}
 
-	if s.cliRepo.CheckName(ctx, body.Name) {
+	if s.cliRepo.CheckName(ctx, body.NameArg) {
 		return apperrors.ErrNameExists
 	}
 

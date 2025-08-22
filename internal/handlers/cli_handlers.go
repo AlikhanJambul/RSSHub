@@ -28,12 +28,16 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		errCode := apperrors.CheckError(err)
 
+		h.cliLogger.Info(err.Error())
+
 		utils.JsonResponse(w, errCode, map[string]string{
 			"error": err.Error(),
 		})
 
 		return
 	}
+
+	h.cliLogger.Info("Succes")
 
 	utils.JsonResponse(w, 200, map[string]string{
 		"status":  "ok",
