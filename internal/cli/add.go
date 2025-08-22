@@ -16,7 +16,7 @@ func AddFeed(command models.Command) {
 		os.Exit(1)
 	}
 
-	resp, err := http.Post("/add", "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post("http://localhost:8080/add", "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)

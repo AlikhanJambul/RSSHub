@@ -24,7 +24,6 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 
 	defer cancel()
-	
 	err := h.cliService.AddService(ctx, data)
 	if err != nil {
 		errCode := apperrors.CheckError(err)
