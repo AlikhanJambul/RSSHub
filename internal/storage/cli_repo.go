@@ -35,7 +35,7 @@ func (r *Repo) CheckName(ctx context.Context, name string) bool {
 }
 
 func (r *Repo) GetFeeds(ctx context.Context, count int) ([]models.RSSWorkers, error) {
-	query := `SELECT name, url FROM feeds LIMIT $1;`
+	query := `SELECT name, url FROM feeds WHERE created_at <> updated_at LIMIT $1;`
 	rows, err := r.db.QueryContext(ctx, query, count)
 	if err != nil {
 		return nil, err

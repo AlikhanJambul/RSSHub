@@ -89,9 +89,9 @@ func main() {
 	case "add":
 		cli.AddFeed(cmd)
 	case "set-interval":
-		fmt.Printf("Changing interval to: %s\n", cmd.Interval)
+		cli.SetInteval(cmd)
 	case "set-workers":
-		fmt.Printf("Changing workers to: %d\n", cmd.Workers)
+		cli.SetWorkersCount(cmd)
 	case "list":
 		fmt.Printf("Listing feeds (limit: %d)\n", cmd.Num)
 	case "delete":

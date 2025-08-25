@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 )
@@ -24,8 +25,10 @@ func AddFeed(command models.Command) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println(resp.StatusCode)
-		fmt.Fprintln(os.Stderr, "Something went wrong")
+		response, _ := io.ReadAll(resp.Body)
+
+		fmt.Fprintln(os.Stderr, string(response))
+		//fmt.Fprintln(os.Stderr, "Something went wrong")
 		os.Exit(1)
 	}
 

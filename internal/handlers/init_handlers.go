@@ -23,6 +23,8 @@ func (h *Handler) Router() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /add", h.Add)
+	mux.HandleFunc("PUT /set-worker", h.SetWorkersCount)
+	mux.HandleFunc("PUT /set-interval", h.SetInterval)
 
 	return mux
 }

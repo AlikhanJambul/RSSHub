@@ -21,6 +21,7 @@ type Manager struct {
 	intervalCh  chan time.Duration
 	mu          sync.Mutex
 	cliLogger   logger.Logger
+	stopCh      chan struct{}
 }
 
 type Aggregator interface {
@@ -31,7 +32,7 @@ type Aggregator interface {
 }
 
 func InitAggregator(count int, inverval time.Duration, repo storage.CLIRepo, cliLogger logger.Logger) Aggregator {
-	return &Manager{countWorker: count, interval: inverval, cliRepo: repo, intervalCh: make(chan time.Duration), cliLogger: cliLogger}
+	return &Manager{countWorker: count, interval: inverval, cliRepo: repo, intervalCh: make(chan time.Duration), cliLogger: cliLogger, stopCh: make(chan struct{})}
 }
 
 func (m *Manager) Start() {
@@ -49,7 +50,7 @@ func (m *Manager) Start() {
 			}
 
 			if len(feeds) != m.countWorker {
-				m.cliLogger.Info("Count of feed is not equal count of workers")
+				m.cliLogger.Warn("Count of feed is not equal count of workers")
 			}
 
 			var wg sync.WaitGroup
@@ -64,8 +65,6 @@ func (m *Manager) Start() {
 						m.cliLogger.Error(err.Error())
 						return
 					}
-
-					//m.cliLogger.Info("count of workers = " len(feed))
 
 					for idx, item := range feed.Channel.Item {
 						m.cliLogger.Info("idx:", idx, "item:", item)
@@ -85,6 +84,9 @@ func (m *Manager) Start() {
 			ticker.Stop()
 			ticker = time.NewTicker(m.interval)
 			m.cliLogger.Info("Interval has been changed")
+		case <-m.stopCh:
+			ticker.Stop()
+			return
 		}
 	}
 }
@@ -110,12 +112,22 @@ func (m *Manager) ChangeInterval(interval string) error {
 		return err
 	}
 
-	m.intervalCh <- validInterval
-
-	return nil
+	select {
+	case m.intervalCh <- validInterval:
+		return nil
+	case <-m.stopCh:
+		return apperrors.ErrAggregatorStop
+	}
 }
 
-func (m *Manager) Stop() {}
+func (m *Manager) Stop() {
+	select {
+	case <-m.stopCh:
+	default:
+		close(m.stopCh)
+		m.cliLogger.Info("Stopping aggregator")
+	}
+}
 
 func parseUrl(url string) (models.RSSFeed, error) {
 	client := &http.Client{Timeout: time.Second * 15}
