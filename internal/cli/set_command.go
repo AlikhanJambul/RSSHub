@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"RSSHub/internal/models"
+	"RSSHub/internal/domain"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func SetWorkersCount(command models.Command) {
+func SetWorkersCount(command domain.Command) {
 	body, err := json.Marshal(command)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -44,14 +44,14 @@ func SetWorkersCount(command models.Command) {
 	os.Exit(0)
 }
 
-func SetInteval(command models.Command) {
+func SetInteval(command domain.Command) {
 	body, err := json.Marshal(command)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
-	req, err := http.NewRequest(http.MethodPut, "http://localhost:8080/set-worker", bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPut, "http://localhost:8080/set-interval", bytes.NewBuffer(body))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)

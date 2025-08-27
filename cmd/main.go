@@ -2,19 +2,19 @@ package main
 
 import (
 	"RSSHub/internal/cli"
-	"RSSHub/internal/models"
+	"RSSHub/internal/domain"
 	"flag"
 	"fmt"
 	"os"
 )
 
-func parseArgs() models.Command {
+func parseArgs() domain.Command {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: rsshub <command> [options]")
 		os.Exit(1)
 	}
 
-	cmd := models.Command{Name: os.Args[1]}
+	cmd := domain.Command{Name: os.Args[1]}
 
 	switch cmd.Name {
 	case "fetch":
@@ -40,13 +40,16 @@ func parseArgs() models.Command {
 		}
 
 	case "set-workers":
+		var count int
+
 		workersCmd := flag.NewFlagSet("set-workers", flag.ExitOnError)
-		workersCmd.IntVar(&cmd.Workers, "count", 0, "Number of workers")
+		workersCmd.IntVar(&count, "count", 0, "Number of workers")
 		workersCmd.Parse(os.Args[2:])
 		if cmd.Workers <= 0 {
 			fmt.Println("Error: --count must be > 0")
 			os.Exit(1)
 		}
+		cmd.Workers = int32(count)
 
 	case "list":
 		listCmd := flag.NewFlagSet("list", flag.ExitOnError)

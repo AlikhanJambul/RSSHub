@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"RSSHub/internal/models"
+	"RSSHub/internal/domain"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func AddFeed(command models.Command) {
+func AddFeed(command domain.Command) {
 	body, err := json.Marshal(command)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())

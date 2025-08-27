@@ -1,12 +1,12 @@
 package cli
 
 import (
-	"RSSHub/internal/aggregator"
+	"RSSHub/internal/adapter/handlers"
+	"RSSHub/internal/adapter/postgres"
+	"RSSHub/internal/adapter/rss"
+	"RSSHub/internal/app"
 	"RSSHub/internal/config"
-	"RSSHub/internal/handlers"
 	"RSSHub/internal/logger"
-	"RSSHub/internal/service"
-	"RSSHub/internal/storage"
 	"context"
 	"log"
 	"net/http"
@@ -25,14 +25,15 @@ func StartServer() {
 
 	cliLogger := logger.New()
 
-	db, err := storage.Connect(cfg.DB)
+	db, err := postgres.Connect(cfg.DB)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cliRepo := storage.NewRepo(db)
-	cliService := service.NewService(cliRepo)
-	cliAggregator := aggregator.InitAggregator(cfg.WorkerCount, interval, cliRepo, *cliLogger)
+	cliParser := rss.NewParser()
+	cliRepo := postgres.NewRepo(db)
+	cliService := app.NewService(cliRepo)
+	cliAggregator := app.InitAggregator(cfg.WorkerCount, interval, cliRepo, *cliLogger, cliParser)
 	cliHandler := handlers.NewHandler(cliRepo, cliService, cliAggregator, *cliLogger)
 
 	stop := make(chan os.Signal, 1)
