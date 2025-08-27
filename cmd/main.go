@@ -8,10 +8,10 @@ import (
 	"os"
 )
 
-func parseArgs() domain.Command {
+func parseArgs() *domain.Command {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: rsshub <command> [options]")
-		os.Exit(1)
+		helpPrint()
+		os.Exit(0)
 	}
 
 	cmd := domain.Command{Name: os.Args[1]}
@@ -53,7 +53,7 @@ func parseArgs() domain.Command {
 
 	case "list":
 		listCmd := flag.NewFlagSet("list", flag.ExitOnError)
-		listCmd.IntVar(&cmd.Num, "num", 0, "Number of feeds to display")
+		listCmd.IntVar(&cmd.Num, "num", -1, "Number of feeds to display")
 		listCmd.Parse(os.Args[2:])
 
 	case "delete":
@@ -74,13 +74,16 @@ func parseArgs() domain.Command {
 			fmt.Println("Error: --feed-name is required")
 			os.Exit(1)
 		}
+	case "help":
+		helpPrint()
+		os.Exit(0)
 
 	default:
 		fmt.Printf("Unknown command: %s\n", cmd.Name)
 		os.Exit(1)
 	}
 
-	return cmd
+	return &cmd
 }
 
 func main() {
@@ -96,10 +99,27 @@ func main() {
 	case "set-workers":
 		cli.SetWorkersCount(cmd)
 	case "list":
-		fmt.Printf("Listing feeds (limit: %d)\n", cmd.Num)
+		cli.ShowList(cmd)
 	case "delete":
-		fmt.Printf("Deleting feed: %s\n", cmd.NameArg)
+		cli.DeleteFeed(cmd)
 	case "articles":
 		fmt.Printf("Listing %d articles from feed: %s\n", cmd.Num, cmd.FeedName)
 	}
+}
+
+func helpPrint() {
+	helpText := `
+  Usage:
+    rsshub COMMAND [OPTIONS]
+
+  Common Commands:
+       add             add new RSS feed
+       set-interval    set RSS fetch interval
+       set-workers     set number of workers
+       list            list available RSS feeds
+       delete          delete RSS feed
+       articles        show latest articles
+       fetch           starts the background process that periodically fetches and processes RSS feeds using a worker pool`
+
+	fmt.Println(helpText)
 }

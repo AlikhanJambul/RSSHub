@@ -12,6 +12,8 @@ type Service struct {
 
 type CLIService interface {
 	AddService(ctx context.Context, body domain.Command) error
+	DeleteService(ctx context.Context, body domain.Command) error
+	ListService(ctx context.Context, body domain.Command) ([]domain.Feed, error)
 }
 
 func NewService(repo postgres.CLIRepo) CLIService {

@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func SetWorkersCount(command domain.Command) {
+func SetWorkersCount(command *domain.Command) {
 	body, err := json.Marshal(command)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
@@ -44,7 +44,7 @@ func SetWorkersCount(command domain.Command) {
 	os.Exit(0)
 }
 
-func SetInteval(command domain.Command) {
+func SetInteval(command *domain.Command) {
 	body, err := json.Marshal(command)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())

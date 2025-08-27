@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/xml"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -38,17 +37,6 @@ func checkUrl(bodyUrl string) bool {
 		return false
 	}
 
-	if feed.Channel.Title == "" {
-		return false
-	}
-
-	for idx, item := range feed.Channel.Item {
-		if idx <= 3 {
-			continue
-		}
-		slog.Info(item.Title)
-	}
-
 	return true
 }
 
@@ -57,13 +45,36 @@ func (s *Service) AddService(ctx context.Context, body domain.Command) error {
 		return apperrors.ErrInvalidName
 	}
 
+	if s.cliRepo.CheckNameURL(ctx, body.NameArg, body.URL) {
+		return apperrors.ErrNameExists
+	}
+
 	if !checkUrl(body.URL) {
 		return apperrors.ErrInvalidURL
 	}
 
-	if s.cliRepo.CheckName(ctx, body.NameArg) {
+	return s.cliRepo.InsertFeed(ctx, body)
+}
+
+func (s *Service) DeleteService(ctx context.Context, body domain.Command) error {
+	ok, err := s.cliRepo.CheckName(ctx, body.NameArg)
+	if err != nil || !ok {
 		return apperrors.ErrNameExists
 	}
 
-	return s.cliRepo.InsertFeed(ctx, body)
+	return s.cliRepo.DeleteFeed(ctx, body.NameArg)
+}
+
+func (s *Service) ListService(ctx context.Context, body domain.Command) ([]domain.Feed, error) {
+	if body.Num <= 0 {
+		return nil, apperrors.ErrListNum
+	}
+
+	limit := true
+
+	if body.Num == -1 {
+		limit = false
+	}
+
+	return s.cliRepo.ListFeeds(ctx, body.Num, limit)
 }

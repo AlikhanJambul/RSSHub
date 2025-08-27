@@ -50,6 +50,44 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	defer r.Body.Close()
+
+	var data domain.Command
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		utils.JsonResponse(w, 401, map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+
+	err := h.cliService.DeleteService(ctx, data)
+	cancel()
+
+	if err != nil {
+		errCode := apperrors.CheckError(err)
+
+		h.cliLogger.Error(err.Error())
+
+		utils.JsonResponse(w, errCode, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	h.cliLogger.Info("Succes")
+	utils.JsonResponse(w, 200, map[string]string{
+		"status": "ok",
+	})
+}
+
 func (h *Handler) SetWorkersCount(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPut {
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -112,4 +150,38 @@ func (h *Handler) SetInterval(w http.ResponseWriter, r *http.Request) {
 
 	h.cliLogger.Info("Succes")
 	utils.JsonResponse(w, 200, map[string]string{})
+}
+
+func (h *Handler) GetList(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	defer r.Body.Close()
+
+	var data domain.Command
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		utils.JsonResponse(w, 401, map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	result, err := h.cliService.ListService(ctx, data)
+	cancel()
+
+	if err != nil {
+		errCode := apperrors.CheckError(err)
+
+		h.cliLogger.Error(err.Error())
+
+		utils.JsonResponse(w, errCode, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	utils.JsonResponse(w, 200, result)
 }

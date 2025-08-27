@@ -10,28 +10,36 @@ import (
 	"os"
 )
 
-func AddFeed(command *domain.Command) {
+func DeleteFeed(command *domain.Command) {
 	body, err := json.Marshal(command)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 
-	resp, err := http.Post("http://localhost:8080/add", "application/json", bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodDelete, "http://localhost:8080/delete", bytes.NewBuffer(body))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		response, _ := io.ReadAll(resp.Body)
 
 		fmt.Fprintln(os.Stderr, string(response))
-		//fmt.Fprintln(os.Stderr, "Something went wrong")
 		os.Exit(1)
 	}
 
-	fmt.Fprintln(os.Stderr, "Success")
+	fmt.Fprintln(os.Stderr, "Feed has been deleted")
 	os.Exit(0)
 }

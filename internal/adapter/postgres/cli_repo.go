@@ -21,11 +21,10 @@ func (r *Repo) InsertFeed(ctx context.Context, body domain.Command) error {
 	return nil
 }
 
-func (r *Repo) CheckName(ctx context.Context, name string) bool {
-	query := `SELECT name FROM feeds WHERE name = $1;`
+func (r *Repo) CheckNameURL(ctx context.Context, name, URL string) bool {
+	query := `SELECT name FROM feeds WHERE name = $1 OR url = $2;`
 
-	var n string
-	err := r.db.QueryRowContext(ctx, query, name).Scan(&n)
+	err := r.db.QueryRowContext(ctx, query, name, URL).Err()
 	if errors.Is(err, sql.ErrNoRows) {
 		return false
 	}
@@ -34,6 +33,20 @@ func (r *Repo) CheckName(ctx context.Context, name string) bool {
 	}
 
 	return true
+}
+
+func (r *Repo) CheckName(ctx context.Context, name string) (bool, error) {
+	query := `SELECT name FROM feeds WHERE name = $1;`
+
+	err := r.db.QueryRowContext(ctx, query, name).Err()
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return true, err
+	}
+
+	return true, nil
 }
 
 func (r *Repo) GetFeeds(ctx context.Context, count int) ([]domain.Feed, error) {
@@ -134,4 +147,65 @@ func (r *Repo) UpdateFeed(feedID string) error {
 
 	err := r.db.QueryRow(updateQuery, time.Now(), feedID).Err()
 	return err
+}
+
+func (r *Repo) DeleteFeed(ctx context.Context, name string) error {
+	deleteFeedQuery := "DELETE FROM feeds WHERE name = $1 RETURNING id;"
+	deleteArticleQuery := "DELETE FROM articles WHERE feed_id = $1;"
+
+	var id string
+
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	err = tx.QueryRowContext(ctx, deleteFeedQuery, name).Scan(&id)
+	if err != nil {
+		return err
+	}
+
+	err = tx.QueryRowContext(ctx, deleteArticleQuery, id).Err()
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *Repo) ListFeeds(ctx context.Context, count int, limit bool) ([]domain.Feed, error) {
+	query := `SELECT name, url, created_at FROM feeds ORDER BY created_at DESC`
+
+	arg := []interface{}{}
+
+	if limit {
+		query += " LIMIT $1;"
+		arg = append(arg, count)
+	}
+
+	var result []domain.Feed
+
+	rows, err := r.db.QueryContext(ctx, query, arg...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var item domain.Feed
+
+		if err = rows.Scan(&item.Name, &item.URL, &item.CreatedAt); err != nil {
+			return nil, err
+		}
+
+		result = append(result, item)
+	}
+
+	return result, nil
 }

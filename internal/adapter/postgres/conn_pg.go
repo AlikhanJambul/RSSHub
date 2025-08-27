@@ -15,11 +15,14 @@ type Repo struct {
 
 type CLIRepo interface {
 	InsertFeed(ctx context.Context, body domain.Command) error
-	CheckName(ctx context.Context, name string) bool
+	CheckNameURL(ctx context.Context, name, URL string) bool
+	CheckName(ctx context.Context, name string) (bool, error)
 	GetFeeds(ctx context.Context, count int) ([]domain.Feed, error)
 	InsertArticles(ctx context.Context, article domain.Article, name string) error
 	BatchInsert(articles []*domain.Article) error
 	UpdateFeed(feedID string) error
+	DeleteFeed(ctx context.Context, name string) error
+	ListFeeds(ctx context.Context, count int, limit bool) ([]domain.Feed, error)
 }
 
 func Connect(cfgDB domain.DB) (*sql.DB, error) {
