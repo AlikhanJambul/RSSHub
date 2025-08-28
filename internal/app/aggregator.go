@@ -14,15 +14,16 @@ import (
 )
 
 type aggregator struct {
-	countWorker int32
-	interval    time.Duration
-	mu          sync.Mutex
-	ctx         context.Context
-	cancel      context.CancelFunc
-	wg          sync.WaitGroup
-	jobs        chan domain.Feed
-	running     bool
-	ticker      *time.Ticker
+	countWorker    int32
+	interval       time.Duration
+	mu             sync.Mutex
+	ctx            context.Context
+	cancel         context.CancelFunc
+	wg             sync.WaitGroup
+	jobs           chan domain.Feed
+	running        bool
+	ticker         *time.Ticker
+	updateInterval chan time.Duration
 
 	cliLogger logger.Logger
 	cliRepo   postgres.CLIRepo
@@ -49,6 +50,7 @@ func (a *aggregator) Start() error {
 	a.wg.Add(1)
 	a.ticker = time.NewTicker(a.interval)
 	a.jobs = make(chan domain.Feed, 100)
+	a.updateInterval = make(chan time.Duration, 1)
 	a.running = true
 	a.startWorkers()
 
@@ -118,10 +120,7 @@ func (a *aggregator) ChangeInterval(interval string) (string, error) {
 	oldInterval := a.interval
 	a.interval = newInterval
 
-	if a.ticker != nil {
-		a.ticker.Stop()
-	}
-	a.ticker = time.NewTicker(a.interval)
+	a.updateInterval <- a.interval
 
 	response := fmt.Sprintf("Interval changed from %s to %s", oldInterval, a.interval)
 	a.cliLogger.Info(response)
@@ -140,6 +139,9 @@ func (a *aggregator) runFetchLoop() {
 			return
 		case <-a.ticker.C:
 			a.fetchFeeds()
+		case newInterval := <-a.updateInterval:
+			a.ticker.Stop()
+			a.ticker = time.NewTicker(newInterval)
 		}
 	}
 }
