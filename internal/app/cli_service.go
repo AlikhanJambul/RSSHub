@@ -70,16 +70,16 @@ func (s *Service) DeleteService(ctx context.Context, body domain.Command) error 
 	return s.cliRepo.DeleteFeed(ctx, body.NameArg)
 }
 
-func (s *Service) ListService(ctx context.Context, body domain.Command) ([]domain.Feed, error) {
-	if body.Num <= 0 {
+func (s *Service) ListService(ctx context.Context, count int) ([]domain.Feed, error) {
+	if count <= 0 {
 		return nil, apperrors.ErrListNum
 	}
 
 	limit := true
 
-	if body.Num == -1 {
+	if count == -1 {
 		limit = false
 	}
 
-	return s.cliRepo.ListFeeds(ctx, body.Num, limit)
+	return s.cliRepo.ListFeeds(ctx, count, limit)
 }

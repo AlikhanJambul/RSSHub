@@ -25,7 +25,7 @@ func (h *Handler) Router() *http.ServeMux {
 	mux.HandleFunc("PUT /set-worker", h.SetWorkersCount)
 	mux.HandleFunc("PUT /set-interval", h.SetInterval)
 	mux.HandleFunc("DELETE /delete", h.Delete)
-	mux.HandleFunc("GET /list", func(w http.ResponseWriter, r *http.Request) {})
+	mux.HandleFunc("GET /list", h.GetList)
 
 	return mux
 }

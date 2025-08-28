@@ -6,7 +6,9 @@ import (
 	"RSSHub/internal/utils"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -163,20 +165,17 @@ func (h *Handler) GetList(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
-	var data domain.Command
-	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		utils.JsonResponse(w, 401, map[string]interface{}{
-			"error": err.Error(),
-		})
-		return
-	}
+	count := r.URL.Query().Get("count")
+	intCount, _ := strconv.Atoi(count)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	result, err := h.cliService.ListService(ctx, data)
+	result, err := h.cliService.ListService(ctx, intCount)
 	cancel()
 
 	if err != nil {
 		errCode := apperrors.CheckError(err)
+
+		fmt.Println(err)
 
 		h.cliLogger.Error(err.Error())
 
