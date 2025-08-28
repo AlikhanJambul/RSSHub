@@ -45,8 +45,7 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	h.cliLogger.Info("Succes")
 
 	utils.JsonResponse(w, 200, map[string]string{
-		"status":  "ok",
-		"message": "Added successfully!",
+		"status": "Added successfully!",
 	})
 }
 
@@ -82,9 +81,9 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.cliLogger.Info("Succes")
+	h.cliLogger.Info("Delete has been finished successfuly")
 	utils.JsonResponse(w, 200, map[string]string{
-		"status": "ok",
+		"status": "Item has been deleted",
 	})
 }
 
@@ -104,7 +103,7 @@ func (h *Handler) SetWorkersCount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.cliAggregator.ChangeCountWorker(data.Workers)
+	response, err := h.cliAggregator.ChangeCountWorker(data.Workers)
 	if err != nil {
 		errCode := apperrors.CheckError(err)
 		h.cliLogger.Error(err.Error())
@@ -117,7 +116,9 @@ func (h *Handler) SetWorkersCount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.cliLogger.Info("Succes")
-	utils.JsonResponse(w, 200, map[string]string{})
+	utils.JsonResponse(w, 200, map[string]string{
+		"status": response,
+	})
 }
 
 func (h *Handler) SetInterval(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +137,7 @@ func (h *Handler) SetInterval(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.cliAggregator.ChangeInterval(data.Interval)
+	response, err := h.cliAggregator.ChangeInterval(data.Interval)
 	if err != nil {
 		errCode := apperrors.CheckError(err)
 
@@ -149,7 +150,9 @@ func (h *Handler) SetInterval(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.cliLogger.Info("Succes")
-	utils.JsonResponse(w, 200, map[string]string{})
+	utils.JsonResponse(w, 200, map[string]string{
+		"status": response,
+	})
 }
 
 func (h *Handler) GetList(w http.ResponseWriter, r *http.Request) {

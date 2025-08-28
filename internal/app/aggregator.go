@@ -31,8 +31,8 @@ type aggregator struct {
 
 type Aggregator interface {
 	Start() error
-	ChangeCountWorker(count int32) error
-	ChangeInterval(interval string) error
+	ChangeCountWorker(count int32) (string, error)
+	ChangeInterval(interval string) (string, error)
 	Stop()
 }
 
@@ -54,6 +54,7 @@ func (a *aggregator) Start() error {
 
 	go a.runFetchLoop()
 
+	a.cliLogger.Info("Aggregator has been started")
 	return nil
 }
 
@@ -69,15 +70,17 @@ func (a *aggregator) Stop() {
 	a.wg.Wait()
 	a.running = false
 
+	a.cliLogger.Info("Aggregator has been stoped")
+
 	return
 }
 
-func (a *aggregator) ChangeCountWorker(count int32) error {
+func (a *aggregator) ChangeCountWorker(count int32) (string, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
 	if count > 15 || count < 1 {
-		return apperrors.ErrCountWorker
+		return "", apperrors.ErrCountWorker
 	}
 
 	oldCount := atomic.LoadInt32(&a.countWorker)
@@ -93,32 +96,43 @@ func (a *aggregator) ChangeCountWorker(count int32) error {
 		}
 	}
 
-	a.cliLogger.Info(fmt.Sprintf("changed count from %d to %d", oldCount, count))
-	return nil
+	response := fmt.Sprintf("changed count from %d to %d", oldCount, count)
+
+	a.cliLogger.Info(response)
+	return response, nil
 }
 
-func (a *aggregator) ChangeInterval(interval string) error {
+func (a *aggregator) ChangeInterval(interval string) (string, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+
 	if !a.running {
-		return apperrors.ErrAggregatorStop
+		return "", apperrors.ErrAggregatorStop
 	}
 
-	validInterval, err := time.ParseDuration(interval)
+	newInterval, err := time.ParseDuration(interval)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	a.interval = validInterval
+	oldInterval := a.interval
+	a.interval = newInterval
 
-	a.ticker.Stop()
+	if a.ticker != nil {
+		a.ticker.Stop()
+	}
 	a.ticker = time.NewTicker(a.interval)
 
-	return nil
+	response := fmt.Sprintf("Interval changed from %s to %s", oldInterval, a.interval)
+	a.cliLogger.Info(response)
+
+	return response, nil
 }
 
 func (a *aggregator) runFetchLoop() {
 	defer a.wg.Done()
+
+	// a.fetchFeeds()
 
 	for {
 		select {
@@ -133,13 +147,17 @@ func (a *aggregator) runFetchLoop() {
 func (a *aggregator) fetchFeeds() {
 	numWorkers := atomic.LoadInt32(&a.countWorker)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-	feeds, err := a.cliRepo.GetFeeds(ctx, int(numWorkers)*2)
-	cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	ctx := context.Background()
+
+	feeds, err := a.cliRepo.GetFeeds(ctx, int(numWorkers))
+	// cancel()
 	if err != nil {
 		a.cliLogger.Warn("Fetching feeds failed", "err", err)
 		return
 	}
+
+	a.cliLogger.Info("GetFeeds finished")
 
 	for _, feed := range feeds {
 		select {
@@ -182,19 +200,27 @@ func (a *aggregator) flush(feed domain.Feed) {
 		return
 	}
 
+	a.cliLogger.Info("Feed parsed")
+
 	articles, err := a.cliParser.ParseArticle(parsedFeed, feed.ID)
 	if err != nil {
 		a.cliLogger.Warn(err.Error())
 		return
 	}
 
+	a.cliLogger.Info("article parsed")
+
 	if err := a.cliRepo.BatchInsert(articles); err != nil {
 		a.cliLogger.Warn(err.Error())
 		return
 	}
 
+	a.cliLogger.Info("batch insert just finished")
+
 	if err := a.cliRepo.UpdateFeed(feed.ID); err != nil {
 		a.cliLogger.Warn(err.Error())
 		return
 	}
+
+	a.cliLogger.Info("feed has been updated")
 }

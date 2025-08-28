@@ -45,7 +45,12 @@ func (s *Service) AddService(ctx context.Context, body domain.Command) error {
 		return apperrors.ErrInvalidName
 	}
 
-	if s.cliRepo.CheckNameURL(ctx, body.NameArg, body.URL) {
+	ok, err := s.cliRepo.CheckNameURL(ctx, body.NameArg, body.URL)
+	if err != nil {
+		return err
+	}
+
+	if ok {
 		return apperrors.ErrNameExists
 	}
 

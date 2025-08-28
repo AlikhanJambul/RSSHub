@@ -45,7 +45,7 @@ func parseArgs() *domain.Command {
 		workersCmd := flag.NewFlagSet("set-workers", flag.ExitOnError)
 		workersCmd.IntVar(&count, "count", 0, "Number of workers")
 		workersCmd.Parse(os.Args[2:])
-		if cmd.Workers <= 0 {
+		if count <= 0 {
 			fmt.Println("Error: --count must be > 0")
 			os.Exit(1)
 		}

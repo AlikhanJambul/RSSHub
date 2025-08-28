@@ -15,7 +15,7 @@ type Repo struct {
 
 type CLIRepo interface {
 	InsertFeed(ctx context.Context, body domain.Command) error
-	CheckNameURL(ctx context.Context, name, URL string) bool
+	CheckNameURL(ctx context.Context, name, URL string) (bool, error)
 	CheckName(ctx context.Context, name string) (bool, error)
 	GetFeeds(ctx context.Context, count int) ([]domain.Feed, error)
 	InsertArticles(ctx context.Context, article domain.Article, name string) error

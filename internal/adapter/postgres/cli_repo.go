@@ -21,18 +21,19 @@ func (r *Repo) InsertFeed(ctx context.Context, body domain.Command) error {
 	return nil
 }
 
-func (r *Repo) CheckNameURL(ctx context.Context, name, URL string) bool {
-	query := `SELECT name FROM feeds WHERE name = $1 OR url = $2;`
+func (r *Repo) CheckNameURL(ctx context.Context, name, URL string) (bool, error) {
+	query := `SELECT 1 FROM feeds WHERE name = $1 OR url = $2;`
 
-	err := r.db.QueryRowContext(ctx, query, name, URL).Err()
+	var exists int
+	err := r.db.QueryRowContext(ctx, query, name, URL).Scan(&exists)
 	if errors.Is(err, sql.ErrNoRows) {
-		return false
+		return false, nil // не найдено
 	}
 	if err != nil {
-		return true
+		return false, err // ошибка реальная
 	}
 
-	return true
+	return true, nil // найдено
 }
 
 func (r *Repo) CheckName(ctx context.Context, name string) (bool, error) {
@@ -61,7 +62,7 @@ func (r *Repo) GetFeeds(ctx context.Context, count int) ([]domain.Feed, error) {
 
 	for rows.Next() {
 		var item domain.Feed
-		if err = rows.Scan(item.ID, &item.Name, &item.URL); err != nil {
+		if err = rows.Scan(&item.ID, &item.Name, &item.URL); err != nil {
 			return nil, err
 		}
 

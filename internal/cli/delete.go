@@ -33,13 +33,21 @@ func DeleteFeed(command *domain.Command) {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		response, _ := io.ReadAll(resp.Body)
+	response, _ := io.ReadAll(resp.Body)
 
-		fmt.Fprintln(os.Stderr, string(response))
+	var res struct {
+		TextResponse string `json:"status"`
+		ErrResponse  string `json:"error"`
+	}
+
+	err = json.Unmarshal(response, &res)
+
+	if resp.StatusCode != http.StatusOK {
+
+		fmt.Fprintln(os.Stderr, res.ErrResponse)
 		os.Exit(1)
 	}
 
-	fmt.Fprintln(os.Stderr, "Feed has been deleted")
+	fmt.Fprintln(os.Stderr, res.TextResponse)
 	os.Exit(0)
 }
