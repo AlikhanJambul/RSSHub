@@ -11,10 +11,11 @@ var (
 	ErrAggregatorStop = errors.New("Aggregator stopped")
 	ErrFeedExists     = errors.New("Feed doesn't exists")
 	ErrListNum        = errors.New("List number should be greater than 0")
+	ErrNameNil        = errors.New("Name doesn't exists")
 )
 
 func CheckError(err error) int {
-	if err == ErrListNum || err == ErrInvalidURL || err == ErrNameExists || err == ErrCountWorker || err == ErrFeedExists {
+	if err == ErrListNum || err == ErrInvalidURL || err == ErrNameNil || err == ErrNameExists || err == ErrCountWorker || err == ErrFeedExists {
 		return 401
 	}
 

@@ -8,6 +8,7 @@ import (
 	"RSSHub/internal/config"
 	"RSSHub/internal/logger"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -50,7 +51,7 @@ func StartServer() {
 		}
 	}()
 
-	cliLogger.Info("Server started")
+	cliLogger.Info(fmt.Sprintf("The background process for fetching feeds has started (interval = %s, workers = %d)"), cfg.TimerInterval, cfg.WorkerCount)
 
 	go cliAggregator.Start()
 

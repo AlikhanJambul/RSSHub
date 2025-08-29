@@ -32,7 +32,7 @@ func parseArgs() *domain.Command {
 
 	case "set-interval":
 		intCmd := flag.NewFlagSet("set-interval", flag.ExitOnError)
-		intCmd.StringVar(&cmd.Interval, "interval", "", "Interval duration (e.g. 3m, 10s)")
+		intCmd.StringVar(&cmd.Interval, "duration", "", "Interval duration (e.g. 3m, 10s)")
 		intCmd.Parse(os.Args[2:])
 		if cmd.Interval == "" {
 			fmt.Println("Error: --interval is required")
@@ -53,7 +53,7 @@ func parseArgs() *domain.Command {
 
 	case "list":
 		listCmd := flag.NewFlagSet("list", flag.ExitOnError)
-		listCmd.IntVar(&cmd.Num, "num", -1, "Number of feeds to display")
+		listCmd.IntVar(&cmd.Num, "num", 0, "Number of feeds to display")
 		listCmd.Parse(os.Args[2:])
 
 	case "delete":
@@ -79,7 +79,7 @@ func parseArgs() *domain.Command {
 		os.Exit(0)
 
 	default:
-		fmt.Printf("Unknown command: %s\n", cmd.Name)
+		helpPrint()
 		os.Exit(1)
 	}
 
@@ -108,8 +108,7 @@ func main() {
 }
 
 func helpPrint() {
-	helpText := `
-  Usage:
+	helpText := `Usage:
     rsshub COMMAND [OPTIONS]
 
   Common Commands:

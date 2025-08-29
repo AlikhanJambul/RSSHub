@@ -26,6 +26,7 @@ func (h *Handler) Router() *http.ServeMux {
 	mux.HandleFunc("PUT /set-interval", h.SetInterval)
 	mux.HandleFunc("DELETE /delete", h.Delete)
 	mux.HandleFunc("GET /list", h.GetList)
+	mux.HandleFunc("GET /list/article", h.GetArticles)
 
 	return mux
 }

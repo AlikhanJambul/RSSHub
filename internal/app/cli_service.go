@@ -37,6 +37,10 @@ func checkUrl(bodyUrl string) bool {
 		return false
 	}
 
+	if feed.Channel.Title == "" {
+		return false
+	}
+
 	return true
 }
 
@@ -64,22 +68,35 @@ func (s *Service) AddService(ctx context.Context, body domain.Command) error {
 func (s *Service) DeleteService(ctx context.Context, body domain.Command) error {
 	ok, err := s.cliRepo.CheckName(ctx, body.NameArg)
 	if err != nil || !ok {
-		return apperrors.ErrNameExists
+		return apperrors.ErrNameNil
 	}
 
 	return s.cliRepo.DeleteFeed(ctx, body.NameArg)
 }
 
 func (s *Service) ListService(ctx context.Context, count int) ([]domain.Feed, error) {
-	if count <= 0 {
+	if count < 0 {
 		return nil, apperrors.ErrListNum
 	}
 
 	limit := true
 
-	if count == -1 {
+	if count == 0 {
 		limit = false
 	}
 
 	return s.cliRepo.ListFeeds(ctx, count, limit)
+}
+
+func (s *Service) ListArticleService(ctx context.Context, name string, count int) ([]domain.Article, error) {
+	ok, err := s.cliRepo.CheckName(ctx, name)
+	if err != nil || !ok {
+		return nil, apperrors.ErrNameNil
+	}
+
+	if count <= 0 {
+		return nil, apperrors.ErrListNum
+	}
+
+	return s.cliRepo.ListArticles(ctx, name, count)
 }

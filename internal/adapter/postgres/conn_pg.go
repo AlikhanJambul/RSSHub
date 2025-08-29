@@ -23,6 +23,7 @@ type CLIRepo interface {
 	UpdateFeed(feedID string) error
 	DeleteFeed(ctx context.Context, name string) error
 	ListFeeds(ctx context.Context, count int, limit bool) ([]domain.Feed, error)
+	ListArticles(ctx context.Context, name string, count int) ([]domain.Article, error)
 }
 
 func Connect(cfgDB domain.DB) (*sql.DB, error) {

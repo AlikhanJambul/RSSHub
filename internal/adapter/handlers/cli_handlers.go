@@ -185,5 +185,42 @@ func (h *Handler) GetList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.JsonResponse(w, 200, result)
+	utils.JsonResponse(w, 200, map[string][]domain.Feed{
+		"feeds": result,
+	})
+}
+
+func (h *Handler) GetArticles(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	defer r.Body.Close()
+
+	name := r.URL.Query().Get("name")
+
+	count := r.URL.Query().Get("count")
+	intCount, _ := strconv.Atoi(count)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	result, err := h.cliService.ListArticleService(ctx, name, intCount)
+	cancel()
+
+	if err != nil {
+		errCode := apperrors.CheckError(err)
+
+		fmt.Println(err)
+
+		h.cliLogger.Error(err.Error())
+
+		utils.JsonResponse(w, errCode, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	utils.JsonResponse(w, 200, map[string][]domain.Article{
+		"articles": result,
+	})
 }

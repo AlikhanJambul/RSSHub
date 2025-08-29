@@ -27,13 +27,13 @@ func (r *Repo) CheckNameURL(ctx context.Context, name, URL string) (bool, error)
 	var exists int
 	err := r.db.QueryRowContext(ctx, query, name, URL).Scan(&exists)
 	if errors.Is(err, sql.ErrNoRows) {
-		return false, nil // не найдено
+		return false, nil
 	}
 	if err != nil {
-		return false, err // ошибка реальная
+		return false, err
 	}
 
-	return true, nil // найдено
+	return true, nil
 }
 
 func (r *Repo) CheckName(ctx context.Context, name string) (bool, error) {
@@ -108,18 +108,30 @@ func (r *Repo) InsertArticles(ctx context.Context, article domain.Article, id st
 }
 
 func (r *Repo) BatchInsert(articles []*domain.Article) error {
-	query := `INSERT INTO articles (created_at, updated_at, title, link, description, published_at, feed_id)
-			  VALUES `
+	if len(articles) == 0 {
+		return nil
+	}
 
-	valueStrings := []string{}
-	args := []interface{}{}
+	query := `
+		INSERT INTO articles (
+			created_at,
+			updated_at,
+			title,
+			link,
+			description,
+			published_at,
+			feed_id
+		) VALUES 
+	`
+
+	valueStrings := make([]string, 0, len(articles))
+	args := make([]interface{}, 0, len(articles)*7)
 	i := 1
 
 	for _, article := range articles {
 		article.CreatedAt = time.Now()
 		article.UpdatedAt = time.Now()
 
-		// формируем часть вида ($1,$2,$3,...)
 		valueStrings = append(valueStrings,
 			fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d, $%d)",
 				i, i+1, i+2, i+3, i+4, i+5, i+6))
@@ -137,7 +149,7 @@ func (r *Repo) BatchInsert(articles []*domain.Article) error {
 		i += 7
 	}
 
-	query = query + strings.Join(valueStrings, ",") + " ON CONFLICT (link) DO NOTHING"
+	query += strings.Join(valueStrings, ",") + " ON CONFLICT (link) DO NOTHING"
 
 	_, err := r.db.Exec(query, args...)
 	return err
@@ -206,6 +218,30 @@ func (r *Repo) ListFeeds(ctx context.Context, count int, limit bool) ([]domain.F
 		}
 
 		result = append(result, item)
+	}
+
+	return result, nil
+}
+
+func (r *Repo) ListArticles(ctx context.Context, name string, count int) ([]domain.Article, error) {
+	query := `SELECT a.title, a.link, a.published_at FROM articles AS a INNER JOIN feeds AS f ON a.feed_id = f.id WHERE f.name = $1 ORDER BY a.updated_at DESC LIMIT $2;`
+
+	rows, err := r.db.QueryContext(ctx, query, name, count)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var result []domain.Article
+
+	for rows.Next() {
+		var article domain.Article
+		if err := rows.Scan(&article.Title, &article.Link, &article.PubDate); err != nil {
+			return nil, err
+		}
+
+		result = append(result, article)
 	}
 
 	return result, nil
