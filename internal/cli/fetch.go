@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,6 +19,11 @@ import (
 )
 
 func StartServer() {
+	if !checkPort() {
+		fmt.Fprintln(os.Stderr, "Background process is already running")
+		os.Exit(1)
+	}
+
 	cfg := config.Load()
 	interval, err := time.ParseDuration(cfg.TimerInterval)
 	if err != nil {
@@ -68,4 +74,14 @@ func StartServer() {
 	cliAggregator.Stop()
 
 	cliLogger.Info("Server exited properly")
+}
+
+func checkPort() bool {
+	ln, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		return false
+	} else {
+		ln.Close()
+		return true
+	}
 }
