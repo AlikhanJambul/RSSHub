@@ -1,9 +1,10 @@
 package app
 
 import (
+	"context"
+
 	"RSSHub/internal/adapter/postgres"
 	"RSSHub/internal/domain"
-	"context"
 )
 
 type Service struct {

@@ -1,12 +1,13 @@
 package cli
 
 import (
-	"RSSHub/internal/domain"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+
+	"RSSHub/internal/domain"
 )
 
 func ShowList(command *domain.Command) {

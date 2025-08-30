@@ -1,0 +1,23 @@
+docker exec -it rsshub_postgres psql -U postgres -d rsshub
+
+
+go run cmd/main.go add --name awd1 --url https://techcrunch.com/feed/
+go run cmd/main.go add --name awd2 --url https://news.ycombinator.com/rss
+go run cmd/main.go add --name awd3 --url https://news.un.org/feed/subscribe/ru/news/all/rss.xml
+go run cmd/main.go add --name awd4 --url https://feeds.bbci.co.uk/news/world/rss.xml
+go run cmd/main.go add --name awd5 --url http://feeds.arstechnica.com/arstechnica/index
+go run cmd/main.go add --name awd6 --url https://www.theverge.com/rss/index.xml
+
+go run -race cmd/main.go set-workers --count 5
+go run -race cmd/main.go set-interval --duration 30m 
+
+go run cmd/main.go delete --name awd1
+go run cmd/main.go delete --name awd2
+go run cmd/main.go delete --name awd3
+go run cmd/main.go delete --name awd4
+go run cmd/main.go delete --name awd5
+go run cmd/main.go delete --name awd6
+
+go run cmd/main.go list --num 3
+
+go run cmd/main.go articles --feed-name awd1 --num 5

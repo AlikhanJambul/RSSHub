@@ -1,13 +1,14 @@
 package cli
 
 import (
-	"RSSHub/internal/domain"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+
+	"RSSHub/internal/domain"
 )
 
 func DeleteFeed(command *domain.Command) {

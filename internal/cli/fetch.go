@@ -1,12 +1,6 @@
 package cli
 
 import (
-	"RSSHub/internal/adapter/handlers"
-	"RSSHub/internal/adapter/postgres"
-	"RSSHub/internal/adapter/rss"
-	"RSSHub/internal/app"
-	"RSSHub/internal/config"
-	"RSSHub/internal/logger"
 	"context"
 	"fmt"
 	"log"
@@ -16,6 +10,13 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	"RSSHub/internal/adapter/handlers"
+	"RSSHub/internal/adapter/postgres"
+	"RSSHub/internal/adapter/rss"
+	"RSSHub/internal/app"
+	"RSSHub/internal/config"
+	"RSSHub/internal/logger"
 )
 
 func StartServer() {

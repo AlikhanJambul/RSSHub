@@ -1,10 +1,11 @@
 package handlers
 
 import (
+	"net/http"
+
 	"RSSHub/internal/adapter/postgres"
 	"RSSHub/internal/app"
 	"RSSHub/internal/logger"
-	"net/http"
 )
 
 type Handler struct {

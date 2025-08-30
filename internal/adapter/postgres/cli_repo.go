@@ -1,13 +1,14 @@
 package postgres
 
 import (
-	"RSSHub/internal/domain"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
+
+	"RSSHub/internal/domain"
 )
 
 func (r *Repo) InsertFeed(ctx context.Context, body domain.Command) error {

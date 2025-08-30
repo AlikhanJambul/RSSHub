@@ -1,12 +1,13 @@
 package config
 
 import (
-	"RSSHub/internal/domain"
 	"bufio"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"RSSHub/internal/domain"
 )
 
 func Load() domain.Config {

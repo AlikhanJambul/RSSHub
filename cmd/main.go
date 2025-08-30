@@ -1,11 +1,12 @@
 package main
 
 import (
-	"RSSHub/internal/cli"
-	"RSSHub/internal/domain"
 	"flag"
 	"fmt"
 	"os"
+
+	"RSSHub/internal/cli"
+	"RSSHub/internal/domain"
 )
 
 func parseArgs() *domain.Command {

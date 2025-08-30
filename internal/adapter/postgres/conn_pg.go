@@ -1,10 +1,11 @@
 package postgres
 
 import (
-	"RSSHub/internal/domain"
 	"context"
 	"database/sql"
 	"fmt"
+
+	"RSSHub/internal/domain"
 
 	_ "github.com/lib/pq"
 )

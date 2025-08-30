@@ -1,14 +1,15 @@
 package app
 
 import (
-	"RSSHub/internal/apperrors"
-	"RSSHub/internal/domain"
 	"context"
 	"encoding/xml"
 	"io"
 	"net/http"
 	"net/url"
 	"time"
+
+	"RSSHub/internal/apperrors"
+	"RSSHub/internal/domain"
 )
 
 func checkUrl(bodyUrl string) bool {

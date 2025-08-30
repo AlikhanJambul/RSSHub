@@ -1,16 +1,17 @@
 package app
 
 import (
-	"RSSHub/internal/adapter/postgres"
-	"RSSHub/internal/adapter/rss"
-	"RSSHub/internal/apperrors"
-	"RSSHub/internal/domain"
-	"RSSHub/internal/logger"
 	"context"
 	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"RSSHub/internal/adapter/postgres"
+	"RSSHub/internal/adapter/rss"
+	"RSSHub/internal/apperrors"
+	"RSSHub/internal/domain"
+	"RSSHub/internal/logger"
 )
 
 type aggregator struct {

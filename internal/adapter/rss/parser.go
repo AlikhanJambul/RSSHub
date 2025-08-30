@@ -1,12 +1,13 @@
 package rss
 
 import (
-	"RSSHub/internal/domain"
 	"encoding/xml"
 	"errors"
 	"io"
 	"net/http"
 	"time"
+
+	"RSSHub/internal/domain"
 )
 
 type Parser struct {
