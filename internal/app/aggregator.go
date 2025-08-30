@@ -118,6 +118,10 @@ func (a *aggregator) ChangeInterval(interval string) (string, error) {
 		return "", err
 	}
 
+	if newInterval < time.Second*10 {
+		return "", fmt.Errorf("interval must be at least 10s, got %s", newInterval)
+	}
+
 	oldInterval := a.interval
 	a.interval = newInterval
 
