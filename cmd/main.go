@@ -103,7 +103,7 @@ func main() {
 	case "delete":
 		cli.DeleteFeed(cmd)
 	case "articles":
-		fmt.Printf("Listing %d articles from feed: %s\n", cmd.Num, cmd.FeedName)
+		cli.ShowListArticle(cmd)
 	}
 }
 

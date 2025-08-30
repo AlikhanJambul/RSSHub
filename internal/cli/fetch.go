@@ -57,7 +57,7 @@ func StartServer() {
 		}
 	}()
 
-	cliLogger.Info(fmt.Sprintf("The background process for fetching feeds has started (interval = %s, workers = %d)"), cfg.TimerInterval, cfg.WorkerCount)
+	cliLogger.Info(fmt.Sprintf("The background process for fetching feeds has started (interval = %v, workers = %d)", cfg.TimerInterval, cfg.WorkerCount))
 
 	go cliAggregator.Start()
 
