@@ -1,43 +1,46 @@
-# RSSHub: Агрегатор RSS-лент
+# RSSHub: RSS Feed Aggregator
 
-## Описание
+## Description
 
-RSSHub - это CLI-приложение для агрегации и обработки RSS-лент. Система периодически получает статьи из пользовательских RSS-лент, сохраняет их в PostgreSQL и предоставляет интерфейс для управления подписками и просмотра новостей.
+**RSSHub** is a CLI application for aggregating and processing RSS feeds.
+The system periodically fetches articles from user-defined RSS feeds, stores them in PostgreSQL, and provides a command-line interface for managing subscriptions and viewing news.
 
-## Особенности
+## Features
 
-- **Фоновое обновление**: Периодическое получение новых статей с настраиваемым интервалом
-- **Параллельная обработка**: Worker pool для конкурентной обработки RSS-лент
-- **Управление через CLI**: Полный набор команд для управления подписками и настройками
-- **Хранение данных**: PostgreSQL для надежного хранения лент и статей
-- **Динамическая конфигурация**: Изменение интервала и количества воркеров без перезапуска
+* **Background updates** — periodic fetching of new articles with a configurable interval
+* **Parallel processing** — worker pool for concurrent RSS feed processing
+* **CLI management** — full set of commands for managing feeds and settings
+* **Data persistence** — PostgreSQL for reliable storage of feeds and articles
+* **Dynamic configuration** — change update intervals and worker counts without restarting
 
-## Архитектура
+## Architecture
 
-Проект использует модульную структуру:
+The project follows a modular architecture:
 
-- **CLI Layer**: Обработка команд и взаимодействие с пользователем
-- **Application Layer**: Бизнес-логика и use cases
-- **Adapter Layer**: 
-  - RSS Adapter (получение и парсинг RSS-лент)
-  - Postgres Adapter (работа с базой данных)
-- **Domain Layer**: Модели данных и интерфейсы
+* **CLI Layer** — handles commands and user interaction
+* **Application Layer** — business logic and use cases
+* **Adapter Layer**:
 
-## Запуск проекта
+  * **RSS Adapter** — fetching and parsing RSS feeds
+  * **Postgres Adapter** — database interaction
+* **Domain Layer** — data models and interfaces
 
-### Предварительные требования
+## Running the Project
 
-- Docker и Docker Compose
-- Go 1.21+ (для локальной разработки)
+### Prerequisites
 
-### Настройка окружения
+* Docker and Docker Compose
+* Go 1.21+ (for local development)
 
-1. Скопируйте файл `.env.example` в `.env`:
+### Environment Configuration
+
+1. Copy the `.env.example` file to `.env`:
+
 ```bash
 cp .env.example .env
 ```
 
-2. Заполните переменные окружения в файле `.env`:
+2. Fill in the environment variables in `.env`:
 
 ```env
 # CLI App
@@ -52,15 +55,15 @@ POSTGRES_PASSWORD=changeme
 POSTGRES_DBNAME=rsshub
 ```
 
-### Запуск с Docker Compose
+### Running with Docker Compose
 
 ```bash
 docker-compose up -d
 ```
 
-### Настройка базы данных
+### Database Setup
 
-После запуска PostgreSQL выполните миграции:
+After PostgreSQL starts, run the migrations:
 
 ```bash
 docker exec -it rsshub_postgres psql -U postgres -d rsshub -c "
@@ -89,16 +92,16 @@ CREATE UNIQUE INDEX articles_feed_link_idx ON articles(feed_id, link);
 "
 ```
 
-### Сборка и запуск приложения
+### Building and Running the Application
 
 ```bash
 go build -o rsshub .
 ./rsshub --help
 ```
 
-## Использование
+## Usage
 
-### Командная строка
+### Command Line
 
 ```bash
 ./rsshub --help
@@ -116,109 +119,109 @@ Common Commands:
   fetch           starts the background process that periodically fetches and processes RSS feeds using a worker pool
 ```
 
-### Команды
+### Commands
 
-#### Добавление RSS-ленты
+#### Add an RSS Feed
 
 ```bash
 ./rsshub add --name "tech-crunch" --url "https://techcrunch.com/feed/"
 ```
 
-#### Запуск фонового процесса
+#### Start Background Fetching
 
 ```bash
 ./rsshub fetch
 ```
 
-#### Изменение интервала обновления
+#### Change Update Interval
 
 ```bash
 ./rsshub set-interval 2m
 ```
 
-#### Изменение количества воркеров
+#### Change Number of Workers
 
 ```bash
 ./rsshub set-workers 5
 ```
 
-#### Список RSS-лент
+#### List RSS Feeds
 
 ```bash
 ./rsshub list --num 5
 ```
 
-#### Удаление RSS-ленты
+#### Delete an RSS Feed
 
 ```bash
 ./rsshub delete --name "tech-crunch"
 ```
 
-#### Просмотр статей
+#### View Articles
 
 ```bash
 ./rsshub articles --feed-name "tech-crunch" --num 5
 ```
 
-## Структура проекта
+## Project Structure
 
 ```
 rsshub/
-├── cmd/                 # Точка входа приложения
-├── internal/            # Внутренние пакеты
-│   ├── adapter/         # Адаптеры
-│   │   ├── handlers/    # Обработчики
-│   │   ├── postgres/    # PostgreSQL адаптер
-│   │   └── rss/         # RSS адаптер
-│   ├── app/             # Приложение
-│   ├── apperrors/       # Ошибки приложения
-│   ├── cli/             # CLI обработка
-│   ├── config/          # Конфигурация
-│   ├── domain/          # Доменный слой
-│   ├── logger/          # Логирование
-│   └── utils/           # Вспомогательные утилиты
-├── migrations/          # Миграции базы данных
-└── docker-compose.yml   # Docker Compose конфигурация
+├── cmd/                 # Application entry point
+├── internal/            # Internal packages
+│   ├── adapter/         # Adapters
+│   │   ├── handlers/    # Handlers
+│   │   ├── postgres/    # PostgreSQL adapter
+│   │   └── rss/         # RSS adapter
+│   ├── app/             # Application logic
+│   ├── apperrors/       # Application errors
+│   ├── cli/             # CLI handling
+│   ├── config/          # Configuration
+│   ├── domain/          # Domain layer
+│   ├── logger/          # Logging
+│   └── utils/           # Utility functions
+├── migrations/          # Database migrations
+└── docker-compose.yml   # Docker Compose configuration
 ```
 
-## База данных
+## Database
 
-### Таблица `feeds`
+### `feeds` Table
 
-Хранит метаданные RSS-лент:
+Stores metadata about RSS feeds:
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| id | UUID | Уникальный идентификатор |
-| created_at | TIMESTAMP | Время создания |
-| updated_at | TIMESTAMP | Время последнего обновления |
-| name | TEXT | Человекочитаемое название |
-| url | TEXT | URL RSS-ленты |
+| Field      | Type      | Description              |
+| ---------- | --------- | ------------------------ |
+| id         | UUID      | Unique identifier        |
+| created_at | TIMESTAMP | Creation time            |
+| updated_at | TIMESTAMP | Last update time         |
+| name       | TEXT      | Human-readable feed name |
+| url        | TEXT      | Feed URL                 |
 
-### Таблица `articles`
+### `articles` Table
 
-Хранит статьи из RSS-лент:
+Stores articles fetched from RSS feeds:
 
-| Поле | Тип | Описание |
-|------|-----|----------|
-| id | UUID | Уникальный идентификатор |
-| created_at | TIMESTAMP | Время создания |
-| updated_at | TIMESTAMP | Время последнего обновления |
-| title | TEXT | Заголовок статьи |
-| link | TEXT | URL статьи |
-| published_at | TIMESTAMP | Время публикации |
-| description | TEXT | Описание статьи |
-| feed_id | UUID | Ссылка на RSS-ленту |
+| Field        | Type      | Description               |
+| ------------ | --------- | ------------------------- |
+| id           | UUID      | Unique identifier         |
+| created_at   | TIMESTAMP | Creation time             |
+| updated_at   | TIMESTAMP | Last update time          |
+| title        | TEXT      | Article title             |
+| link         | TEXT      | Article URL               |
+| published_at | TIMESTAMP | Publication date          |
+| description  | TEXT      | Article description       |
+| feed_id      | UUID      | Reference to the RSS feed |
 
-## Примеры RSS-лент для тестирования
+## Example RSS Feeds for Testing
 
-- TechCrunch: `https://techcrunch.com/feed/`
-- Hacker News: `https://news.ycombinator.com/rss`
-- UN News: `https://news.un.org/feed/subscribe/ru/news/all/rss.xml`
-- BBC News: `https://feeds.bbci.co.uk/news/world/rss.xml`
-- Ars Technica: `http://feeds.arstechnica.com/arstechnica/index`
-- The Verge: `https://www.theverge.com/rss/index.xml`
+* TechCrunch: `https://techcrunch.com/feed/`
+* Hacker News: `https://news.ycombinator.com/rss`
+* UN News: `https://news.un.org/feed/subscribe/ru/news/all/rss.xml`
+* BBC News: `https://feeds.bbci.co.uk/news/world/rss.xml`
+* Ars Technica: `http://feeds.arstechnica.com/arstechnica/index`
+* The Verge: `https://www.theverge.com/rss/index.xml`
 
 ## Graceful Shutdown
 
-Приложение корректно обрабатывает сигналы завершения (Ctrl+C), останавливая все фоновые процессы и закрывая соединения с базой данных.
+The application gracefully handles termination signals (Ctrl+C), stopping all background processes and closing database connections.
